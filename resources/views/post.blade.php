@@ -1,17 +1,13 @@
-<!DOCTYPE html>
+<x-layout>
+    <x-slot name='content'>
+        <article>
+            <h1>{{ $post->title }}</h1>
 
-<title>My blog</title>
-<link rel="stylesheet" href="/app.css">
+            <div>
+                {!! $post->body !!}
+            </div>
+        </article>
 
-
-<body>
-    <article>
-        <h1>{{ $post->title }}</h1>
-
-        <div>
-            {!! $post->body !!}
-        </div>
-    </article>
-
-    <a href="/"> Go back</a>
-</body>
+        <a href="/"> Go back</a>
+    </x-slot>
+</x-layout>

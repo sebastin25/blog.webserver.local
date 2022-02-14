@@ -1,21 +1,25 @@
-<!DOCTYPE html>
+{{-- @extends('layout')
 
-<title>My blog</title>
-<link rel="stylesheet" href="/app.css">
+@section('banner')
+    <h1>My blog</h1>
+@endsection --}}
 
+{{-- @section('content') --}}
+<x-layout>
+    <x-slot name='content'>
+        @foreach ($posts as $post)
+            <article class="{{ $loop->even ? 'foobar' : '' }}">
+                <h1>
+                    <a href="/posts/{{ $post->slug }}">
+                        {{ $post->title }}
+                    </a>
+                </h1>
 
-<body>
-    @foreach ($posts as $post)
-        <article class="{{ $loop->even ? 'foobar' : '' }}">
-            <h1>
-                <a href="/posts/{{ $post->slug }}">
-                    {{ $post->title }}
-                </a>
-            </h1>
-
-            <div>
-                {!! $post->excerpt !!}
-            </div>
-        </article>
-    @endforeach
-</body>
+                <div>
+                    {!! $post->excerpt !!}
+                </div>
+            </article>
+        @endforeach
+        {{-- @endsection --}}
+    </x-slot>
+</x-layout>
