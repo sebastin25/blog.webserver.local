@@ -45,3 +45,15 @@ Luego agregamos en welcome.blade.php que se encuentra en /resources/views/ las r
 <link rel="stylesheet" href="/app.css" />
 <script src="/app.js"></script>
 ```
+
+## Make a Route and Link to it
+
+Para crear una nueva ruta y linkear hacia ella, necesitamos crear una vista nueva en /resources/views/ a la cual llamaremos post.blade.php y deberemos agregar una ruta nueva en /routes/web.php
+
+```php
+Route::get('/post', function () {
+    return view('post');
+});
+```
+
+'/post' es la ruta para acceder a la vista 'post', por la cual si quisieramos ver esta vista, ingresariamos desde http://blog.webserver.local/post
