@@ -152,3 +152,76 @@ class Post extends Model
     protected $guarded = [];
 }
 ```
+
+## Route Model Binding
+
+Gracias a route model binding, podemos cambiar la routa de la siguiente manera para que utiliza la variable $post. Esto sucede gracias a que el wildcard que en este caso es {post}, esta ligado con el modelo Post.php
+
+```php
+Route::get('/posts/{post}', function (Post $post) {
+    return view('post', [
+        'post' => $post
+    ]);
+});
+```
+
+Hay caso en los que ocuparemos buscar utilizando otros campos y no por post, por lo tanto modificaremos la funcion up() en `/database/migrations/2022_02_14_202409_create_posts_table.php` y usaremos un `php artisan migrate:fresh` para recrearla las tablas
+
+```php
+    public function up()
+    {
+        Schema::create('posts', function (Blueprint $table) {
+            $table->id();
+            $table->string('slug')->unique();
+            $table->string('title');
+            $table->text('excerpt');
+            $table->text('body');
+            $table->timestamps();
+            $table->timestamp('published_at')->nullable();
+        });
+    }
+```
+
+Ahora volvemos a agregar los cuatros post pero esta vez con el slug y modificamos el archivo de rutas
+
+```php
+Route::get('/posts/{post:slug}', function (Post $post) { //Post::where('slug', $post)-> firstOrFail();
+    return view('post', [
+        'post' => $post
+    ]);
+});
+```
+
+y luego modificamos la vista `posts.blade.php` para que utilice `slug` y no `id`.
+
+```php
+<a href="/posts/{{ $post->slug }}">
+    {{ $post->title }}
+</a>
+```
+
+Otra forma de hacer esto, en caso de que el slug siempre vaya a ser el identificador,es modificando `/app/Models/Post.php`:
+
+```php
+class Post extends Model
+{
+    use HasFactory;
+
+    protected $guarded = [];
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+}
+```
+
+y en la ruta
+
+```php
+Route::get('/posts/{post}', function (Post $post) { //Post::where('slug', $post)-> firstOrFail();
+    return view('post', [
+        'post' => $post
+    ]);
+});
+```
