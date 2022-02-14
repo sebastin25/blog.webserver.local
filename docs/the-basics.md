@@ -19,3 +19,29 @@ Route::get('/json', function () {
     return ['foo' => 'bar'];
 });
 ```
+
+## Include CSS and JavaScript
+
+Podemos agregar css y js creando los respectivos archivos .js y .css en /public/ , en este caso se utilizo app.js y app.css
+
+app.js
+
+```js
+alert("I am here");
+```
+
+app.cs
+
+```css
+body {
+    background: navy;
+    color: white;
+}
+```
+
+Luego agregamos en welcome.blade.php que se encuentra en /resources/views/ las referencias hacia los archivos
+
+```html
+<link rel="stylesheet" href="/app.css" />
+<script src="/app.js"></script>
+```
