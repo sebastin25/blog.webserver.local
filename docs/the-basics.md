@@ -105,3 +105,41 @@ Route::get('/posts/{post}', function ($slug) {
 ```
 
 Notese que al final tenemos `->where('post', '[A-z_\-]+');` , esto se esta utilizando para especificar que `'post'` solo puede recibir los caracteres que cumplan con la expresion regular que se esta utilizando. Tambien se podrian utilizar helpers como `->whereAlphaNumeric('post');`
+
+## Use Caching for Expensive Operations
+
+Para agregar caching, lo podemos hacer de la siguiente manera:
+
+```php
+Route::get('/posts/{post}', function ($slug) {
+
+    $path = __DIR__ . "/../resources/posts/{$slug}.html";
+
+    if (!file_exists($path)) {
+        return redirect('/');
+    }
+
+    $post = cache()->remember("posts.{$slug}", 5, function() use ($path) {
+        return file_get_contents($path);
+    });
+
+    return view('post', [
+        'post' => $post
+    ]);
+})->where('post', '[A-z_\-]+');
+```
+
+Notese que estamos usando
+
+```php
+cache()->remember("posts.{$slug}", 5, function() use ($path) {
+        return file_get_contents($path)
+```
+
+donde `"posts.{$slug}"` son los datos que estamos guardando, `5` son los segundos y en `function() use ($path)` estamos asignado una variable para que pueda recibir datos. En lugar de usar segundos, podemos usar `now()->addMinutes(5)` o alguna de sus variables para horas, dias, semanas, etc
+
+Tambien es posible hacerlo de la siguiente manera para que quede un poco mas limpio el codigo.
+
+```php
+    $post = cache()->remember("posts.{$slug}", 1200, fn () => file_get_contents($path));
+```

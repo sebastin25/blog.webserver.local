@@ -39,9 +39,12 @@ $post = file_get_contents(__DIR__, '/../resources/posts/my-first-post.html');
         //abort(404);
         return redirect('/');
     }
-
-    $post = file_get_contents($path);
-
+    /*
+    $post = cache()->remember("posts.{$slug}", 1200, function () use ($path) {
+        return file_get_contents($path);
+    });
+*/
+    $post = cache()->remember("posts.{$slug}", 1200, fn () => file_get_contents($path));
 
     return view('post', [
         'post' => $post
