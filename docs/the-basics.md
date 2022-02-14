@@ -143,3 +143,63 @@ Tambien es posible hacerlo de la siguiente manera para que quede un poco mas lim
 ```php
     $post = cache()->remember("posts.{$slug}", 1200, fn () => file_get_contents($path));
 ```
+
+## Use the Filesystem Class to Read a Directory
+
+Usaremos clases para separar parte de la logica en funciones que podremos llamar en el archivo de routas para obtener la información que necesitaremos, por lo cual comenzamos creando una archivo `Post.php` en `/app/Models/` el cual llevara lo siguiente:
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\File;
+
+class Post
+{
+    public static function all()
+    {
+        $files = File::files(resource_path("posts/"));
+
+        return array_map(fn ($file) => $file->getContents(), $files);
+    }
+
+    public static function find($slug)
+    {
+
+        if (!file_exists($path = resource_path("posts/{$slug}.html"))) {
+            throw new ModelNotFoundException();
+        }
+
+        return cache()->remember("posts.{$slug}", 1200, fn () => file_get_contents($path));
+    }
+}
+
+```
+
+Notese que al principio del archivo tenemos 2 lineas `use`, estas se usan para importar esos helpers de Laravel. Luego tendremos la clase Post la cual contiene 2 funciones.
+
+`all()` la utilizamos para retornar todos los archivos de los posts que se encuentran en la carpeta `posts/` y luego retornamos un array que contiene los contenidos de esos posts.
+
+`find($slug)` lo utilizamos para buscar un post en especifico, reemplazando el codigo que teniamos en la ruta. Primero revisa si hay un archivo existe con el nombre que se le esta pasando y si no es asi, tira una excepción.
+Si el archivo existe, retorna el cache con los contenidos del post.
+
+El archivo de rutas quedaria asi:
+
+```php
+Route::get('/', function () {
+    return view('posts', [
+        'posts' => Post::all()
+    ]);
+});
+
+Route::get('/posts/{post}', function ($slug) {
+
+return view('post', [
+        'post' => Post::find($slug)
+    ]);
+})->where('post', '[A-z_\-]+');
+```
+
+Recordar que es importante asegurarse que se este importando la clase Post con un `use App\Models\Post;`
