@@ -324,3 +324,37 @@ Para terminar, le agregamos a las vistas lo siguiente, para que muestre a que ca
     <a href="#">{{ $post->category->name }}</a>
 </p>
 ```
+
+## Show All Posts Associated With a Category
+
+Modificamos `/app/Models/Category.php` para agregar la relacion con posts, ya que una categoria puede tener muchos posts.
+
+```php
+class Category extends Model
+{
+    use HasFactory;
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+}
+```
+
+Luego agregamos una ruta nueva que se encargara de mostrar las categorias
+
+```php
+Route::get('/categories/{category:slug}', function (Category $category) {
+    return view('posts', [
+        'posts' => $category->posts
+    ]);
+});
+```
+
+y modificamos en las vistas el url para que utilice la ruta nueva que creamos
+
+```php
+<p>
+    <a href="/categories/{{$post->category->slug}}">{{ $post->category->name }}</a>
+</p>
+```
