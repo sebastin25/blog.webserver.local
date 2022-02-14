@@ -105,3 +105,50 @@ $post -> save();
 ```
 
 y modificamos la vista para que utilice `{!! $post->title !!}`
+
+## 3 Ways to Mitigate Mass Assignment Vulnerabilities
+
+Agregamos un tercer post de la misma manera que lo hicimos anteriormente y luego agregaremos un cuarto post de la siguiente manera, igual desde `php artisan tinker`:
+
+```php
+$post = new App\Models\Post::create(['title'=>'My fourth Post', 'excerpt' => 'excerpt of post', 'body' => 'Deserunt exercitation occaecat quis non. Ut officia enim ex irure. Lorem exercitation incididunt ipsum reprehenderit irure laborum eu nulla. Nostrud excepteur id fugiat voluptate elit dolor ea ut. Officia in aliquip ad sunt. Sit consectetur occaecat aliqua duis proident voluptate pariatur tempor labore minim dolore. Anim enim nulla ipsum fugiat dolore.
+
+Fugiat dolor anim excepteur sint nulla laboris. Minim sit minim labore dolor dolor nostrud consequat velit est exercitation laborum dolor reprehenderit et. Cupidatat nostrud ipsum pariatur mollit amet qui in. Sint mollit et qui sit amet. Ut ut officia adipisicing aute ex dolor et pariatur. Adipisicing ex quis minim incididunt voluptate dolore duis commodo sit proident aliqua aliqua ipsum. Pariatur Lorem occaecat cupidatat aliqua laborum cupidatat Lorem eiusmod deserunt culpa.']);
+```
+
+Sin embargo, para que sirva de esta forma, tendremos que arreglar una serie de errores, ya que no se permite asignar masivamente los campos title, excerpt y body. Esto no se permite por motivos de seguridad, ya que puede prestarse para que algun usuario malicioso ingrese datos malevolos. Esto se conoce como: Mass asignement vulnerability.
+
+Hay 3 formas en que se puede resolver esto, modificando `/app/Models/Post.php`:
+
+1. Usando la variable $fillable, la cual permite agregar masivamente los campos especificados.
+
+```php
+class Post extends Model
+{
+    use HasFactory;
+
+    protected $fillable = ['title', 'excerpt', 'body'];
+}
+```
+
+2. Usando la variable $guarded, la cual permite agregar masivamente todos los campos excepto los que se especifican
+
+```php
+class Post extends Model
+{
+    use HasFactory;
+
+    protected $guarded = ['id'];
+}
+```
+
+3. Usando la variable $guarded con un array vacio y no agregar filas a la tabla por medio de asignamientos masivos.
+
+```php
+class Post extends Model
+{
+    use HasFactory;
+
+    protected $guarded = [];
+}
+```
