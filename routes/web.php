@@ -27,7 +27,7 @@ Route::get('/posts/{post}', function ($slug) {
     //Find a post by its slug and pass it to a view called "post"
 
     return view('post', [
-        'post' => Post::find($slug)
+        'post' => Post::findorFail($slug)
     ]);
 
     /*
@@ -56,7 +56,7 @@ $post = file_get_contents(__DIR__, '/../resources/posts/my-first-post.html');
     return view('post', [
         'post' => $post
     ]); */
-})->where('post', '[A-z_\-]+');
+});
 
 Route::get('/json', function () {
     return ['foo' => 'bar'];

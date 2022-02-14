@@ -52,3 +52,25 @@ en este caso para marcar las secciones se utiliza `{{$content}}`, en el caso de 
     <x-slot name = 'content'>
 </x-layout>
 ```
+
+## A Few Tweaks and Consideration
+
+Debido a los cambios que se hicieron en la forma en que obtenemos cada post, ya no es necesario `->where('post', '[A-z_\-]+')` en la ruta, por lo cual se elimina y se modifica la funcion `find()` que se encuentra en la clase `Post.php`, para que muestre un 404 al ingresar una dirección incorrecta.
+
+```php
+    public static function find($slug)
+    {
+        return static::all()->firstWhere('slug', $slug);
+    }
+
+    public static function findorFail($slug)
+    {
+        $post = static::find($slug);
+        if (!$post) {
+            throw new ModelNotFoundException();
+        }
+        return $post;
+    }
+```
+
+Se debe usar `findorFall()` en las rutas donde se requiera.
