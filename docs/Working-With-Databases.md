@@ -81,3 +81,27 @@ $post->save();
 ```
 
 Ya con el post agregado, el siguiente paso seria cambiar en las vistas y en las rutas para que utilicemos `$id` y no `$slug`, ya que ahora lo que recibiremos son IDs.
+
+## Eloquent Updates and HTML Escaping
+
+Ahora modicaremos los 2 posts para cambiar el 'body' y agregarle las etiquetas html <p>, esto lo haremos desde `php artisan tinker`:
+
+```php
+$post = App\Models\Post::first();
+$post -> body = '<p>'. $post->body .'</p>';
+$post -> save();
+
+$post = App\Models\Post::find(2); //Buscamos el post con ID 2, en este caso el segundo post
+$post -> body = '<p>'. $post->body .'</p>';
+$post -> save();
+```
+
+Se puede guardar etiquetas html sin embargo hay que tener cuidado, ya que si la idea es que en las vistas se lean los datos que se estan pasado como html, es posible insertar scripts maliciosos.
+
+```php
+$post = App\Models\Post::first();
+$post->title = 'My <strong>first</strong> Post';
+$post -> save();
+```
+
+y modificamos la vista para que utilice `{!! $post->title !!}`
