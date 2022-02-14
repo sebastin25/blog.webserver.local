@@ -296,3 +296,27 @@ posts.blade.php
     <?php endforeach; ?>
 </body>
 ```
+
+## Collection Sorting and Caching Refresher
+
+Agregamos el collection que teniamos dentro de un cache, esta vez permanente y al final del collection lo ordenamos con un `sortByDesc('date')`
+
+```php
+    public static function all()
+    {
+        return cache()->rememberForever('posts.all', function () {
+            return collect(File::files(resource_path("posts")))
+                ->map(fn ($file) => YamlFrontMatter::parseFile($file))
+                ->map(fn ($document) => new Post(
+                    $document->title,
+                    $document->excerpt,
+                    $document->date,
+                    $document->body(),
+                    $document->slug
+                ))
+                ->sortByDesc('date');
+        });
+    }
+```
+
+Con `php artisan tinker` podemos borrar el cache usando `cache()->forget('posts.all')`
