@@ -1,3 +1,11 @@
 [<Go Back](/README.md)
 
-## Working With Databases
+# Working With Databases
+
+## Environment Files and Database Connections
+
+Todo token o configuración que sea privada, debe ir en .env
+
+Ej: config de base de datos, tokens de aws, información del servidor de correos, etc
+
+Una vez configurada correctamente la config de la base de datos en .env, haciendo de cuenta que la base de datos ya esta creada, usamos el comando `php artisan migrate` para crear las tablas iniciales.
