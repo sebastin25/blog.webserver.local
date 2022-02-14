@@ -225,3 +225,102 @@ Route::get('/posts/{post}', function (Post $post) { //Post::where('slug', $post)
     ]);
 });
 ```
+
+## Your First Eloquent Relationship
+
+Crearemos el modelo y migration para 'Category' usando el comando `php artisan make:model Category -m`
+
+Una vez creada la migracion y modelo, modificamos los archivos
+
+`/database/migrations/2022_02_14_224748_create_categories_table.php`
+
+```php
+    public function up()
+    {
+        Schema::create('categories', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('slug');
+            $table->timestamps();
+        });
+    }
+```
+
+`/database/migrations/2022_02_14_202409_create_posts_table` donde le agregaremos una columna para la llave foranea
+
+```php
+    public function up()
+    {
+        Schema::create('posts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('category_id');
+            $table->string('slug')->unique();
+            $table->string('title');
+            $table->text('excerpt');
+            $table->text('body');
+            $table->timestamps();
+            $table->timestamp('published_at')->nullable();
+        });
+    }
+```
+
+Usamos `php artisan migrate:fresh` y agregamos 3 categorias de la siguiente forma(Personal, Work, Hobbies):
+
+```php
+use App\Models\Category;
+$c = new Category;
+$c->name = 'Personal';
+$c->slug = 'personal';
+$c->save();
+```
+
+Ahora crearemos unos posts con categorias usando `php artisan tinker`
+
+```php
+use App\Models\Post;
+Post::create([
+    'title' => 'My Family Post',
+    'excerpt' => 'Excerpt for my post',
+    'body' => 'Lorem ipsum dolar sit amet.',
+    'slug' => 'my-family-post',
+    'category_id' => 1
+]);
+Post::create([
+    'title' => 'My Work Post',
+    'excerpt' => 'Excerpt for my post',
+    'body' => 'Lorem ipsum dolar sit amet.',
+    'slug' => 'my-work-post',
+    'category_id' => 2
+]);
+Post::create([
+    'title' => 'My Hobbies Post',
+    'excerpt' => 'Excerpt for my post',
+    'body' => 'Lorem ipsum dolar sit amet.',
+    'slug' => 'my-hobbies-post',
+    'category_id' => 3
+]);
+```
+
+Ahora que ya tenemos los post con categorias asignadas, modificaremos `/app/Models/Post.php` para agregar la relación con las categorias.
+
+```php
+class Post extends Model
+{
+    use HasFactory;
+
+    protected $guarded = [];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class); // De esta forma decimos que un post pertenece a una categoria
+    }
+}
+```
+
+Para terminar, le agregamos a las vistas lo siguiente, para que muestre a que categoria pertenece cada post.
+
+```php
+<p>
+    <a href="#">{{ $post->category->name }}</a>
+</p>
+```
