@@ -203,3 +203,96 @@ return view('post', [
 ```
 
 Recordar que es importante asegurarse que se este importando la clase Post con un `use App\Models\Post;`
+
+## Find a Composer Package for Post Metadata
+
+Agregaremos el paquete de composer [yaml-front-matter](https://github.com/spatie/yaml-front-matter) siguiendo las instrucciones en la web, esto desde vagrant en `/vagrant/sites`.
+
+Una vez instalado el paquete, ocuparemos importarlo en la clase con `use Spatie\YamlFrontMatter\YamlFrontMatter;` y luego crearemos una función \_\_construct y las variables que ocuparemos
+
+```php
+    public $title;
+    public $excerpt;
+    public $date;
+    public $body;
+    public $slug;
+
+    public function __construct($title, $excerpt, $date, $body, $slug)
+    {
+        $this->title = $title;
+        $this->excerpt = $excerpt;
+        $this->date = $date;
+        $this->body = $body;
+        $this->slug = $slug;
+    }
+```
+
+Las funciones all() y find($slug) quedarian de la siguiente forma:
+
+```php
+public static function all()
+    {
+        return collect(File::files(resource_path("posts")))
+            ->map(fn ($file) => YamlFrontMatter::parseFile($file))
+            ->map(fn ($document) => new Post(
+                $document->title,
+                $document->excerpt,
+                $document->date,
+                $document->body(),
+                $document->slug
+            ));
+    }
+
+    public static function find($slug)
+    {
+        return static::all()->firstWhere('slug', $slug);
+    }
+```
+
+A los \*-post.html se les agregaria los metadatos al inicio:
+
+```html
+---
+title: My First Post
+slug: my-first-post
+excerpt: Laboris ea pariatur veniam esse proident velit esse cillum.
+date: 2021-05-21
+---
+```
+
+y se modificarian las vistas:
+
+post.blade.php
+
+```php
+<body>
+    <article>
+        <h1><?= $post->title ?></h1>
+
+        <div>
+            <?= $post->body ?>
+        </div>
+    </article>
+
+    <a href="/"> Go back</a>
+</body>
+```
+
+posts.blade.php
+
+```php
+<body>
+    <?php foreach($posts as $post) : ?>
+    <article>
+        <h1>
+            <a href="/posts/<?= $post->slug ?>">
+                <?= $post->title ?>
+            </a>
+        </h1>
+        <div>
+            <?= $post->body ?>
+        </div>
+    </article>
+    <?php endforeach; ?>
+</body>
+```
