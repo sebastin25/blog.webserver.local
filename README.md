@@ -2,9 +2,9 @@
 
 ### 1° Entregable (episodios del 5 al 30)
 
--   [ ] [Módulo 2. Autenticación (The Basics)](./docs/the-basics.md)
--   [ ] [Módulo 3. Motor de plantillas (Blade)](./docs/blade.md)
--   [ ] [Módulo 4. Trabajando con BD (Working With Databases)](./docs/Working-With-Databases.md)
+-   [x] [Módulo 2. Autenticación (The Basics)](./docs/the-basics.md)
+-   [x] [Módulo 3. Motor de plantillas (Blade)](./docs/blade.md)
+-   [x] [Módulo 4. Trabajando con BD (Working With Databases)](./docs/Working-With-Databases.md)
 
 ### 2° Entregable (episodios del 31 al 51)
 

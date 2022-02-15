@@ -386,3 +386,121 @@ Route::get('/', function () {
 `Post::with('category')->get()` lo que hace es solicitar los post junto con la categoria a la que pertenece cada uno y con el `->get()` realiza el query. Una vez esto resuelto, podemos observer que ya solo realiza 2 sql queries.
 
 ![Clockwork n+1 problem resolved](/docs/images/clockwork_n+1_problem_resolved.png)
+
+## Database Seeding Saves Time
+
+Le agregaremos el author a cada post, por lo cual ocuparemos modificar `/database/migrations/2022_02_14_202409_create_posts_table` donde le agregaremos una columna para la llave foranea a la tabla de usuarios y luego usaremos `php artisan migrate:fresh`
+
+```php
+    public function up()
+    {
+        Schema::create('posts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id');
+            $table->foreignId('category_id');
+            $table->string('slug')->unique();
+            $table->string('title');
+            $table->text('excerpt');
+            $table->text('body');
+            $table->timestamps();
+            $table->timestamp('published_at')->nullable();
+        });
+    }
+```
+
+Sin embargo, nuevamente nos quedamos sin datos en la DB y debemos agregar para poder hacer pruebas.
+
+Primero, modificaremos `/database/migrations/2022_02_14_224748_create_categories_table` para que su name y slug sean unique();
+
+```php
+public function up()
+{
+    Schema::create('categories', function (Blueprint $table)
+    {
+        $table->id();
+        $table->string('name')->unique();
+        $table->string('slug')->unique();
+        $table->timestamps();
+    });
+}
+```
+
+Despues modificaremos `/app/Models/User.php` para agregar la relacion con posts, ya que un usuario puede tener muchos.
+
+```php
+public function posts()
+{
+    return $this->hasMany(Post::class);
+}
+```
+
+Tambien modificaremos `/app/Models/Post.php` para agregar la relacion con usuarios, ya que un post le pertenece a un usuario quien lo publica.
+
+```php
+public function user()
+{
+    return $this->belongsTo(User::class);
+ }
+```
+
+Y modificaremos `/resources/views/post.blade.php` para que muestre el nombre del usuario o author del post.
+
+```php
+ <p>
+    By <a href="#">{{ $post->user->name }}</a> in <a
+        href="/categories/{{ $post->category->slug }}">{{ $post->category->name }}</a>
+</p>
+```
+
+Terminando, para solucionar el problema de tener que estar añadiendo datos a las tablas manualmente cada vez que hacemos una migración, modificaremos el archivo `/database/seeders/DatabaseSeeder.php` para que contenga datos de prueba.
+
+```php
+    public function run()
+    {
+        //Hacemos un truncate al inicio del seed para que cuando llamemos el comando 'php artisan db:seed', no debe problemas por ya haber datos existentes
+        User::truncate();
+        Category::truncate();
+        Post::truncate();
+
+        $user = User::factory()->create();
+
+        $personal = Category::create([
+            'name' => 'Personal',
+            'slug' => 'personal',
+        ]);
+
+        $family = Category::create([
+            'name' => 'Family',
+            'slug' => 'family',
+        ]);
+
+        $work = Category::create([
+            'name' => 'Work',
+            'slug' => 'work',
+        ]);
+
+        Post::create([
+            'user_id' => $user->id,
+            'category_id' => $family->id,
+            'title' => 'My Family Post',
+            'slug' => 'my-first-post',
+            'excerpt' => 'Excerpt for my post',
+            'body' => '<p>Sit dolore est minim non nostrud aliquip. Id aliquip eiusmod nulla excepteur laboris dolore elit culpa ipsum sunt ea Lorem cillum do. Sint magna veniam minim laboris. Sint laboris dolor do nisi excepteur enim minim et consectetur ex anim elit ut veniam.
+
+Non officia anim deserunt irure exercitation est enim anim officia. Ut aliqua enim nostrud nisi nisi quis velit elit do id in est fugiat. Ex voluptate proident ex cupidatat ad nulla nisi laboris elit ut. Elit sunt irure deserunt cillum sint. Eiusmod occaecat deserunt Lorem aliquip aute officia sint voluptate. Proident sint anim id occaecat anim ea fugiat.</p>',
+        ]);
+
+        Post::create([
+            'user_id' => $user->id,
+            'category_id' => $work->id,
+            'title' => 'My Work Post',
+            'slug' => 'my-second-post',
+            'excerpt' => 'Excerpt for my post',
+            'body' => '<p>Sit dolore est minim non nostrud aliquip. Id aliquip eiusmod nulla excepteur laboris dolore elit culpa ipsum sunt ea Lorem cillum do. Sint magna veniam minim laboris. Sint laboris dolor do nisi excepteur enim minim et consectetur ex anim elit ut veniam.
+
+Non officia anim deserunt irure exercitation est enim anim officia. Ut aliqua enim nostrud nisi nisi quis velit elit do id in est fugiat. Ex voluptate proident ex cupidatat ad nulla nisi laboris elit ut. Elit sunt irure deserunt cillum sint. Eiusmod occaecat deserunt Lorem aliquip aute officia sint voluptate. Proident sint anim id occaecat anim ea fugiat.</p>',
+        ]);
+    }
+```
+
+Este archivo se encargara de crear un usuario con datos aleatorios, crear 3 categorias y luego crear 2 posts, esto se puede hacer con el comando `php artisan db:seed` el cual agregara los datos sin modificar las propiedas de las tablas o con el comando `php artisan migrate:fresh --seed`, el cual elimina todas las tablas y vuelva a realizar las migraciones y ya que tiene `--seed`, tambien agrega los datos de prueba.
