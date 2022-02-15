@@ -504,3 +504,68 @@ Non officia anim deserunt irure exercitation est enim anim officia. Ut aliqua en
 ```
 
 Este archivo se encargara de crear un usuario con datos aleatorios, crear 3 categorias y luego crear 2 posts, esto se puede hacer con el comando `php artisan db:seed` el cual agregara los datos sin modificar las propiedas de las tablas o con el comando `php artisan migrate:fresh --seed`, el cual elimina todas las tablas y vuelva a realizar las migraciones y ya que tiene `--seed`, tambien agrega los datos de prueba.
+
+## Turbo Boost With Factories
+
+En caso de ocupar un model para comentarios por ejemplo, podriamos crearlo con `php artisan make:model Comments -mf` de esta forma creariamos el modelo,migration y factory de Comments.
+
+En este caso, crearemos un factory para Post y uno para Category usando `php artisan make:factory PostFactory` y `php artisan make:factory CategoryFactory`los cuales aparecera en `/database/factories/` y luego los modificaremos.
+
+```php
+class PostFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        return [
+            'user_id' => User::factory(),
+            'category_id' => Category::factory(),
+            'slug' => $this->faker->slug(),
+            'title' => $this->faker->sentence(),
+            'excerpt' => $this->faker->sentence(),
+            'body' => $this->faker->paragraph(),
+        ];
+    }
+}
+```
+
+```php
+class CategoryFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        return [
+            'name' => $this->faker->word(),
+            'slug' => $this->faker->slug(),
+        ];
+    }
+}
+```
+
+Para terminar, modificaremos `/database/seeders/DatabaseSeeder.php` y usaremos el factory que acabamos de crear de Post, donde el factory de Post utiliza los de Category y User para generar parte de sus datos.
+
+```php
+class DatabaseSeeder extends Seeder
+{
+    /**
+     * Seed the application's database.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        Post::factory(5)->create();
+    }
+}
+```
+
+Esta funcion nos genera 5 post, cada uno con 1 categoria y 1 usuario distinto, para un total de 5 post, 5 categorias y 5 usuarios. Los factory son muy utiles para llenar rapidamente la DB de datos de prueba.
