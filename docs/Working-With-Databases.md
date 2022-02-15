@@ -640,3 +640,25 @@ Modificamos las vistas con la referencia y enlace correcto
 ```php
  By <a href="/authors/{{ $post->author->username }}">
 ```
+
+## Eager Load Relationships on an Existing Model
+
+Cuando estamos trabajando en un modelo existe donde no podemos usar `with('category', 'author')`, tenemos la opcion de usar `load(['category', 'author'])`
+
+```php
+Route::get('/categories/{category:slug}', function (Category $category) {
+    return view('posts', [
+        'posts' => $category->posts->load(['category', 'author'])
+    ]);
+});
+
+Route::get('/authors/{author:username}', function (User $author) {
+    return view('posts', [
+        'posts' => $author->posts->load(['category', 'author'])
+    ]);
+});
+```
+
+Tambien podriamos resolver este problema modificando agregando la variable `protected $with = ['category', 'author'];` en `/App/Models/Post.php` y con eso ya no necesitariamos usar `load()` o `with()` en las rutas. Se debe tener cuidado al realizarlo de esta forma ya que podriamos estar solicitando los datos de las relaciones aun cuando no las necesitamos.
+
+Tambien podriamos usar `Post::without('category', 'author')->first()` para que nos de los resultados sin los datos de las relaciones category y author.
