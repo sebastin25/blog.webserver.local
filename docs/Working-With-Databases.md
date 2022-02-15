@@ -358,3 +358,31 @@ y modificamos en las vistas el url para que utilice la ruta nueva que creamos
     <a href="/categories/{{$post->category->slug}}">{{ $post->category->name }}</a>
 </p>
 ```
+
+## Clockwork, and the N+1 Problem
+
+Usaremos [Clockwork](https://underground.works/clockwork/) en nuestro explorador para poder hacer debugging.
+
+Primero instalaremos usando `composer require itsgoingd/clockwork` y luego la extensión del navegador.
+
+Ahora que tenemos instalado Clockwork, podemos recargar la pagina y en los Developer Tools podremos encontrar una nueva pestañá llamada Clockwork.
+
+![Clockwork](/docs/images/clockwork.png)
+
+Si revisamos en la pestaña de database que aparece en Clockwork, podremos ver que tenemos un /get que se realizado al cargar la pagina el cual genero 4 sql queries mientras que solo tenemos 3 posts, a esto se le llama 'N+1 Problem'.
+
+![Clockwork n+1 problem](/docs/images/clockwork_n+1_problem.png)
+
+Este problema lo podemos resolver modificando la ruta
+
+```php
+Route::get('/', function () {
+    return view('posts', [
+        'posts' => Post::with('category')->get()
+    ]);
+});
+```
+
+`Post::with('category')->get()` lo que hace es solicitar los post junto con la categoria a la que pertenece cada uno y con el `->get()` realiza el query. Una vez esto resuelto, podemos observer que ya solo realiza 2 sql queries.
+
+![Clockwork n+1 problem resolved](/docs/images/clockwork_n+1_problem_resolved.png)
