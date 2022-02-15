@@ -572,7 +572,16 @@ Esta funcion nos genera 5 post, cada uno con 1 categoria y 1 usuario distinto, p
 
 ## View All Posts By An Author
 
-Cambio en el archivo de rutas para que al mostrar todos los post, los muestre por orden del mas nuevo al mas viejo y traiga tambien los datos del author
+Modificamos la relación de user() en `/App/Models/Post.php` para que se llame author()
+
+```php
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+```
+
+Cambiamos en el archivo de rutas para que al mostrar todos los post, los muestre por orden del mas nuevo al mas viejo y traiga tambien los datos del author
 
 ```php
 Route::get('/', function () {
@@ -580,4 +589,54 @@ Route::get('/', function () {
         'posts' => Post::latest()->with('category, author')->get()
     ]);
 });
+```
+
+Modificamos la migracion de Users para agregar la columna username
+
+```php
+    public function up()
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('username')->unique();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->rememberToken();
+            $table->timestamps();
+        });
+    }
+```
+
+Modificamos el UserFactory para que genere un username random
+
+```php
+    public function definition()
+    {
+        return [
+            'name' => $this->faker->name(),
+            'username' => $this->faker->unique()->userName(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'email_verified_at' => now(),
+            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+            'remember_token' => Str::random(10),
+        ];
+    }
+```
+
+Agregamos una ruta nueva para mostrar los post por author
+
+```php
+Route::get('/authors/{author:username}', function (User $author) {
+    return view('posts', [
+        'posts' => $author->posts
+    ]);
+});
+```
+
+Modificamos las vistas con la referencia y enlace correcto
+
+```php
+ By <a href="/authors/{{ $post->author->username }}">
 ```
