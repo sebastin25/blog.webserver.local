@@ -569,3 +569,15 @@ class DatabaseSeeder extends Seeder
 ```
 
 Esta funcion nos genera 5 post, cada uno con 1 categoria y 1 usuario distinto, para un total de 5 post, 5 categorias y 5 usuarios. Los factory son muy utiles para llenar rapidamente la DB de datos de prueba.
+
+## View All Posts By An Author
+
+Cambio en el archivo de rutas para que al mostrar todos los post, los muestre por orden del mas nuevo al mas viejo y traiga tambien los datos del author
+
+```php
+Route::get('/', function () {
+    return view('posts', [
+        'posts' => Post::latest()->with('category, author')->get()
+    ]);
+});
+```
