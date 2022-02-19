@@ -1,5 +1,6 @@
 <x-layout>
-    <x-slot name='content'>
+    <x-slot name='slot'>
+
         <article>
             <h1>{!! $post->title !!}</h1>
 

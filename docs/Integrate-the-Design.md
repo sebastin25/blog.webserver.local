@@ -60,3 +60,169 @@ Ahora crearemos un partial view en `/resources/views/` al que llamaremos `_post-
     </x-slot>
 </x-layout>
 ```
+
+## Blade Components and CSS Grids
+
+Ya que queremos obtener posts dinamicamente, crearemos un componente al que llamaremos `posts-grid.blade.php` el cual tendra el codigo necesario para mostrar dinamicamente nuestros posts.
+
+Ahora modificaremos `posts.blade.php` para que quede de la siguiente forma:
+
+```php
+<x-layout>
+    <x-slot name='slot'>
+
+        @include('_post-header')
+
+        <main class="max-w-6xl mx-auto mt-6 lg:mt-20 space-y-6">
+            {{-- Queremos que solo muestre los posts, si $posts no es 0 --}}
+            @if ($posts->count(1))
+            {{-- Queremos que el componente tenga acceso a la variable $posts --}}
+                <x-posts-grid :posts="$posts" />
+            @else
+                <p class="text-center"> No posts yet. Please check back later.</p>
+            @endif
+        </main>
+    </x-slot>
+</x-layout>
+```
+
+Ahora, en el componente que acabamos de crear, tendremos que agregar el componente para `post-featured-card` y los `post-card`
+
+```php
+{{-- Le pasamos el primer $post, que se encuentra en el array $ posts, al componente --}}
+
+<x-post-featured-card :post="$posts[0]" />
+
+{{-- Ya que no queremos mostrar div vacios, revisamos si hay mas de 1 post --}}
+
+@if ($posts->count() > 1)
+    <div class="lg:grid lg:grid-cols-6">
+
+    {{-- Por cada post que haya en el array de posts agregaremos el componente, saltandonos el primero ya que se esta usando anteriormente como "featured post" --}}
+
+        @foreach ($posts->skip(1) as $post)
+
+        {{-- Le pasamos un atributo class al componente, el cual cambiara la cantidad de columnas que puede usar cada post dependiendo de si son los 2 primeros post del array $posts --}}
+            <x-post-card :post="$post" class="{{ $loop->iteration < 3 ? 'col-span-3' : 'col-span-2' }}" />
+        @endforeach
+    </div>
+@endif
+
+```
+
+Ahora modificaremos la vista `post-featured-card` donde le agregaremos al inicio ` @props(['post'])`, para que de esta forma pueda usar la variable 'post' que se le esta pasando al componente. Luego modificaremos el archivo para mostrar los datos que tenemos en `$post`, en el caso del tiempo usaremos `$post->created_at->diffForHumans()` para mostrar cuando fue publicado el post de una forma mas legible para el usuario.
+
+```php
+
+@props(['post'])
+
+<article
+    class="transition-colors duration-300 hover:bg-gray-100 border border-black border-opacity-0 hover:border-opacity-5 rounded-xl">
+    <div class="py-6 px-5 lg:flex">
+        <div class="flex-1 lg:mr-8">
+            <img src="/images/illustration-1.png" alt="Blog Post illustration" class="rounded-xl">
+        </div>
+
+        <div class="flex-1 flex flex-col justify-between">
+            <header class="mt-8 lg:mt-0">
+                <div class="space-x-2">
+                    <a href="/categories/{{ $post->category->slug }}"
+                        class="px-3 py-1 border border-blue-300 rounded-full text-blue-300 text-xs uppercase font-semibold"
+                        style="font-size: 10px">{{ $post->category->name }}</a>
+                </div>
+
+                <div class="mt-4">
+                    <h1 class="text-3xl">
+                        <a href="/posts/{{ $post->slug }}">
+                            {{ $post->title }}
+                        </a>
+                    </h1>
+
+                    <span class="mt-2 block text-gray-400 text-xs">
+                        Published <time>{{ $post->created_at->diffForHumans() }}</time>
+                    </span>
+                </div>
+            </header>
+
+            <div class="text-sm mt-2">
+                <p>
+                    {{ $post->excerpt }}
+                </p>
+            </div>
+
+            <footer class="flex justify-between items-center mt-8">
+                <div class="flex items-center text-sm">
+                    <img src="/images/lary-avatar.svg" alt="Lary avatar">
+                    <div class="ml-3">
+                        <h5 class="font-bold">{{ $post->author->name }}</h5>
+                        <h6>Mascot at Laracasts</h6>
+                    </div>
+                </div>
+
+                <div class="hidden lg:block">
+                    <a href="/posts/{{ $post->slug }}"
+                        class="transition-colors duration-300 text-xs font-semibold bg-gray-200 hover:bg-gray-300 rounded-full py-2 px-8">Read
+                        More</a>
+                </div>
+            </footer>
+        </div>
+    </div>
+</article>
+```
+
+Ahora modificaremos la vista `post-card` donde le agregaremos al inicio ` @props(['post'])`, para que de esta forma pueda usar la variable 'post' que se le esta pasando al componente. Luego modificaremos el archivo para mostrar los datos que tenemos en `$post` y ya que les estaremos pasando el attributo 'class', deberemos usar `<article {{ $attributes->merge(['class' =>'....']) }}>` para hacer un merge del atributo 'class' que le estamos pasando con el atributo 'class' ya existe del articulo.
+
+```php
+ @props(['post'])
+
+ <article
+     {{ $attributes->merge(['class' =>'transition-colors duration-300 hover:bg-gray-100 border border-black border-opacity-0 hover:border-opacity-5 rounded-xl']) }}>
+     <div class="py-6 px-5">
+         <div>
+             <img src="/images/illustration-3.png" alt="Blog Post illustration" class="rounded-xl">
+         </div>
+
+         <div class="mt-8 flex flex-col justify-between">
+             <header>
+                 <div class="space-x-2">
+                     <a href="/categories/{{ $post->category->slug }}"
+                         class="px-3 py-1 border border-blue-300 rounded-full text-blue-300 text-xs uppercase font-semibold"
+                         style="font-size: 10px"> {{ $post->category->name }}</a>
+                 </div>
+
+                 <div class="mt-4">
+                     <h1 class="text-3xl">
+                         {{ $post->title }}
+                     </h1>
+
+                     <span class="mt-2 block text-gray-400 text-xs">
+                         Published <time>{{ $post->created_at->diffForHumans() }}</time>
+                     </span>
+                 </div>
+             </header>
+
+             <div class="text-sm mt-4">
+                 <p>
+                     {{ $post->excerpt }}
+                 </p>
+             </div>
+
+             <footer class="flex justify-between items-center mt-8">
+                 <div class="flex items-center text-sm">
+                     <img src="/images/lary-avatar.svg" alt="Lary avatar">
+                     <div class="ml-3">
+                         <h5 class="font-bold">{{ $post->author->name }}</h5>
+                         <h6>Mascot at Laracasts</h6>
+                     </div>
+                 </div>
+
+                 <div>
+                     <a href="/posts/{{ $post->slug }}"
+                         class="transition-colors duration-300 text-xs font-semibold bg-gray-200 hover:bg-gray-300 rounded-full py-2 px-8">Read
+                         More</a>
+                 </div>
+             </footer>
+         </div>
+     </div>
+ </article>
+```
