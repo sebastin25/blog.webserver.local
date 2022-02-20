@@ -455,3 +455,87 @@ Route::get('/categories/{category:slug}', function (Category $category) {
     ]);
 })->name('category');
 ```
+
+## Quick Tweaks and Clean-Up
+
+Comenzaremos modificando `PostFactory.php` para que nos genere varios parrafos en el body y excerpt.
+
+```php
+public function definition()
+    {
+        return [
+            'user_id' => User::factory(),
+            'category_id' => Category::factory(),
+            'slug' => $this->faker->slug(),
+            'title' => $this->faker->sentence(),
+            'excerpt' => '<p>' . implode('</p><p>', $this->faker->paragraphs(2)) . '</p>',
+            'body' => '<p>' . implode('</p><p>', $this->faker->paragraphs(6)) . '</p>',
+        ];
+    }
+```
+
+Luego modificaremos `post-card.blade.php` para que nos reconozco el codigo html que esta guardado en la DB y de esta forma podamos mostrar cada parrafo con su propia etiqueta `<p>`
+
+```php
+ <div class="text-sm mt-4 space-y-4">
+    {!! $post->excerpt !!}
+</div>
+```
+
+Realizamos un cambio similar en `post-featured-card.blade.php`
+
+```php
+<div class="space-y-4 lg:teleading-loose">
+    {!! $post->body !!}
+</div>
+```
+
+Y en `post.blade.php`
+
+```php
+<div class="text-sm mt-2 space-y-4">
+    {!! $post->excerpt !!}
+</div>
+```
+
+Modificamos `_post-header.blade.php` para cambiar algunas clases y remover partes que no usaremos.
+
+```php
+<header class="max-w-xl mx-auto mt-20 text-center">
+    <h1 class="text-4xl">
+        Latest <span class="text-blue-500">Laravel From Scratch</span> News
+    </h1>
+    <div class="space-y-2 lg:space-y-0 lg:space-x-4 mt-4">
+        <!--  Category -->
+        <div class="relative lg:inline-flex bg-gray-100 rounded-xl">
+            <x-dropdown>
+                <x-slot name='trigger'>
+                    <button class="py-2 pl-3 pr-9 text-sm font-semibold w-full lg:w-32 text-left flex lg:inline-flex">
+
+                        {{ isset($currentCategory) ? ucwords($currentCategory->name) : 'Categories' }}
+
+                        <x-icon name='down-arrow' class=" absolute pointer-events-none" style="right: 12px;" />
+                    </button>
+                </x-slot>
+                <x-dropdown-item href="/" :active="request()->routeIs('home')">All</x-dropdown-item>
+
+                @foreach ($categories as $category)
+                    <x-dropdown-item href="/categories/{{ $category->slug }}"
+                        :active="request()->is('categories/' . $category->slug )">
+                        {{ ucwords($category->name) }}
+                    </x-dropdown-item>
+                @endforeach
+            </x-dropdown>
+        </div>
+    </div>
+</header>
+```
+
+Y para terminar agregaremos unas clases a `dropdown.blade.php` para reducir el tamaño maximo del dropdown
+
+```php
+<div x-show="show" class="py-2 absolute bg-gray-100 mt-2rounded-xl w-full z-50 overflow-auto max-h-52"
+    style="display: none">
+    {{ $slot }}
+</div>
+```
