@@ -91,3 +91,33 @@ Para que nuestra contraseña se guarde encriptada, usaremos `bcrypt()` y mutator
         $this->attributes['password'] = bcrypt($password);
     }
 ```
+
+## Failed Validation and Old Input Data
+
+En caso de fallar la validación a la hora de crear un usuario, ya sea por el name, username, email o password, necesitamos mostrar un mensaje al respecto para que el usuario sepa cual fue el error, esto lo logramos agregando lo siguiente dentro del div que contiene el respectivo input y la variable `$message` tiene el error que nos esta regresando la validación para `name`.
+
+```php
+@error('name')
+    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+@enderror
+```
+
+Para que el input siga teniendo los datos ingresados cuando dio el error, agregaremos el atributo `value="{{ old('name') }}"` a los input donde sea necesario que siga mostrando los datos ya ingresados anteriormente
+
+Ya que usuario y email son unique, tendremos que agregar una validación para que no permita agregar a la DB si ya existen.
+
+```php
+public function store()
+{
+    $attributes = request()->validate([
+        'name' => 'required|max:255',
+        'username' => 'required|min:3|max:255|unique:users,username',
+        'email' => 'required|email|max:255|unique:users,email',
+        'password' => 'required|min:7|max:255',
+    ]);
+
+    User::create($attributes);
+
+    return redirect('/');
+}
+```
