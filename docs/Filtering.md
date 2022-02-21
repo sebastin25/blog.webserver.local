@@ -250,3 +250,30 @@ Y para terminar modificamos nuestras vistas y componentes para agregarle un enla
      </a>
 </h5>
 ```
+
+## Merge Category and Search Queries
+
+Para poder realizar busquedas combinando Category y Search queries, agregaremos un input hidden que se encargara de agregar la categoria a la busqueda
+
+`_header.blade.php`
+
+```php
+<form method="GET" action="#">
+    @if (request('category'))
+        <input type="hidden" name="category" value="{{ request('category') }}">
+    @endif
+    <input type="text" name="search" placeholder="Find something" class="bg-transparent placeholder-black font-semibold text-sm" value="{{ request('search') }}">
+</form>
+```
+
+Y para poder buscar combinando Search y Category queries, modificaremos nuestro `<x-dropdown-item>` href para que al seleccionar una categoria desde el dropdown, realice una busqueda de la categoria y el texto
+
+`category-dropdown-blade.php`
+
+```php
+<x-dropdown-item
+    href="/?category={{ $category->slug }}&{{ http_build_query(request()->except('category')) }}"
+    :active="request()->is('categories/' . $category->slug )">
+    {{ ucwords($category->name) }}
+</x-dropdown-item>
+```
