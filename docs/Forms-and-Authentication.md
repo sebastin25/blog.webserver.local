@@ -80,3 +80,14 @@ Y para terminar crearemos nuestra vista `/resources/views/register/create.blade.
     </section>
 </x-layout>
 ```
+
+## Automatic Password Hashing With Mutators
+
+Para que nuestra contraseña se guarde encriptada, usaremos `bcrypt()` y mutators para que de esta forma cada vez que recibamos un atributo 'password', se corra el codigo que vienen en el mutator, que en este caso seria el encriptar la contraseña. Esto lo hacemos en `/app/Models/User.php`
+
+```php
+    public function setPasswordAttribute($password)
+    {
+        $this->attributes['password'] = bcrypt($password);
+    }
+```
