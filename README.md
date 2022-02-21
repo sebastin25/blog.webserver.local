@@ -9,7 +9,7 @@
 ### 2° Entregable (episodios del 31 al 51)
 
 -   [x] [Módulo 5. Integrar el diseño (Integrate the Design)](./docs/Integrate-the-Design.md)
--   [ ] [Módulo 6. Buscar (Search)](./docs/Search.md)
+-   [x] [Módulo 6. Buscar (Search)](./docs/Search.md)
 -   [ ] [Módulo 7. Filtrado (Filtering)](./docs/Filtering.md)
 -   [ ] [Módulo 8. Paginación (Pagination)](./docs/Pagination.md)
 -   [ ] [Módulo 9. Formulario y autenticación (Forms and Authentication)](./docs/Forms-and-Authentication.md)

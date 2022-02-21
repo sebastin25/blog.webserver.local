@@ -17,12 +17,14 @@
                 <x-dropdown-item href="/" :active="request()->routeIs('home')">All</x-dropdown-item>
 
                 @foreach ($categories as $category)
-                    <x-dropdown-item href="/categories/{{ $category->slug }}"
+                    <x-dropdown-item href="/?category={{ $category->slug }}"
                         :active="request()->is('categories/' . $category->slug )">
                         {{ ucwords($category->name) }}
                     </x-dropdown-item>
                 @endforeach
             </x-dropdown>
+
+
         </div>
         <!-- Search -->
         <div class="relative flex lg:inline-flex items-center bg-gray-100 rounded-xl px-3 py-2">
