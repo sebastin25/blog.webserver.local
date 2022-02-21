@@ -175,3 +175,78 @@ class CategoryDropdown extends Component
     }
 }
 ```
+
+## Author Filtering
+
+Eliminamos nuestra ruta `/authors/{author:username}` de tal forma que solo nos quedarian las siguiente 2 rutas.
+
+```php
+Route::get('/', [PostController::class, 'index'])->name('home');
+Route::get('/posts/{post:slug}', [PostController::class, 'show']);
+```
+
+Ahora en nuestro `PostController`, agregamos el filtro 'author' y eliminamos las otras funciones que ya no necesitamos como 'showAuthor'
+
+```php
+class PostController extends Controller
+{
+    public function index()
+    {
+        return view('posts.index', [
+            'posts' => Post::latest()
+                ->with('category', 'author')
+                ->filter(request(['search', 'category', 'author']))
+                ->get()
+        ]);
+    }
+
+    public function show(Post $post)
+    {
+        return view('posts.show', [
+            'post' => $post
+        ]);
+    }
+}
+```
+
+En nuestro modelo `Post`, agregamos nuestro filtro para autores
+
+```php
+public function scopeFilter($query, array $filters)
+{
+
+    $query->when($filters['search'] ?? false, fn ($query, $search) =>
+        $query
+            ->where('title', 'like', '%' . $search . '%')
+            ->orWhere('body', 'like', '%' . $search . '%'));
+    $query->when(
+        $filters['category'] ?? false,
+        fn ($query, $category) =>
+        $query->whereHas(
+            'category',
+            fn ($query) =>
+            $query->where('slug', $category)
+        )
+    );
+    $query->when(
+        $filters['author'] ?? false,
+        fn ($query, $author) =>
+        $query->whereHas(
+            'author',
+             fn ($query) =>
+            $query->where('username', $author)
+        )
+    );
+    }
+```
+
+Y para terminar modificamos nuestras vistas y componentes para agregarle un enlace al nombre de autor para que pueda acceder al filtro. Esto lo hacemos en `post-card`, `post-featured-card` y `show`
+
+```php
+<h5 class="font-bold">
+    <a href="/?author={{
+        $post->author->username }}">
+        {{ $post->author->name }}
+     </a>
+</h5>
+```

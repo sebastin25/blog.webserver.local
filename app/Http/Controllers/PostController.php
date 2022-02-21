@@ -11,11 +11,10 @@ class PostController extends Controller
 {
     public function index()
     {
-
         return view('posts.index', [
             'posts' => Post::latest()
                 ->with('category', 'author')
-                ->filter(request(['search', 'category']))
+                ->filter(request(['search', 'category', 'author']))
                 ->get()
         ]);
     }
@@ -24,22 +23,6 @@ class PostController extends Controller
     {
         return view('posts.show', [
             'post' => $post
-        ]);
-    }
-
-    public function showCategory(Category $category)
-    {
-        return view('posts.show', [
-            'posts' => $category->posts->load(['category', 'author']),
-            'currentCategory' => $category,
-            'categories' => Category::all()
-        ]);
-    }
-
-    public function showAuthor(User $author)
-    {
-        return view('posts.show', [
-            'posts' => $author->posts->load(['category', 'author'])
         ]);
     }
 }
