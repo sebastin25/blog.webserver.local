@@ -277,3 +277,19 @@ Y para poder buscar combinando Search y Category queries, modificaremos nuestro 
     {{ ucwords($category->name) }}
 </x-dropdown-item>
 ```
+
+## Fix a Confusing Eloquent Query Bug
+
+Tenemos un bug que nos esta mostrando falsos positivos a la hora de realizar una busqueda junto con la categoria, esto debido a que el filtro no esta hecho correctamente, para resolverlo tendremos que modificarlo
+
+```php
+$query->when(
+    $filters['search'] ?? false,
+    fn ($query, $search) =>
+    $query->where(
+        fn ($query) =>
+        $query->where('title', 'like', '%' . $search . '%')
+                ->orWhere('body', 'like', '%' . $search . '%')
+    )
+);
+```
