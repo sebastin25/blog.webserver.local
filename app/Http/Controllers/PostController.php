@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
+
 use App\Models\Post;
-use App\Models\User;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
@@ -15,7 +14,7 @@ class PostController extends Controller
             'posts' => Post::latest()
                 ->with('category', 'author')
                 ->filter(request(['search', 'category', 'author']))
-                ->get()
+                ->paginate(3)->withQueryString()
         ]);
     }
 

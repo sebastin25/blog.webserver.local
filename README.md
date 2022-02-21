@@ -10,8 +10,8 @@
 
 -   [x] [Módulo 5. Integrar el diseño (Integrate the Design)](./docs/Integrate-the-Design.md)
 -   [x] [Módulo 6. Buscar (Search)](./docs/Search.md)
--   [ ] [Módulo 7. Filtrado (Filtering)](./docs/Filtering.md)
--   [ ] [Módulo 8. Paginación (Pagination)](./docs/Pagination.md)
+-   [x] [Módulo 7. Filtrado (Filtering)](./docs/Filtering.md)
+-   [x] [Módulo 8. Paginación (Pagination)](./docs/Pagination.md)
 -   [ ] [Módulo 9. Formulario y autenticación (Forms and Authentication)](./docs/Forms-and-Authentication.md)
 
 ### 3° Entregable (episodios del 52 al 70)
