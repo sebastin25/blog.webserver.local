@@ -121,3 +121,36 @@ public function store()
     return redirect('/');
 }
 ```
+
+## Show a Success Flash Message
+
+Para mostrar un mensaje informando que la cuenta ha sido creada exitosamente, pasaremos el mensaje por medio de `session()->flash()`, por lo cual modificaremos `RegisterController` para que la funcion store() retorne el mensaje. En este caso estamos usando `with()` en el return, que es otra forma de usar flash().
+
+```php
+public function store()
+{
+    $attributes = request()->validate([
+        'name' => 'required|max:255',
+        'username' => 'required|min:3|max:255|unique:users,username',
+        'email' => 'required|email|max:255|unique:users,email',
+        'password' => 'required|min:7|max:255',
+    ]);
+
+    User::create($attributes);
+
+    return redirect('/')->with('success', 'Your account has been created.');
+}
+```
+
+Luego crearemos un componente nuevo llamado `flash.blade.php` el cual tendra el mensaje a mostrar.
+
+```php
+@if (session()->has('success'))
+    <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 4000)" x-show="show"
+        class="fixed bg-blue-500 text-white py-2 px-4 rounded-xl bottom-3 right-3 text-sm">
+        <p>{{ session('success') }}</p>
+    </div>
+@endif
+```
+
+En `layout.blade.php` agregamos la referencia al componente `<x-flash />`
