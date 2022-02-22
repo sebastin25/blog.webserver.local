@@ -154,3 +154,50 @@ Luego crearemos un componente nuevo llamado `flash.blade.php` el cual tendra el 
 ```
 
 En `layout.blade.php` agregamos la referencia al componente `<x-flash />`
+
+## Login and Logout
+
+Primero agregaremos los enlaces para registrarse, log in y log out en el view `layout.blade.php` para lo cual modificaremos una parte del codigo ya existente.
+
+```php
+<div class="mt-8 md:mt-0 flex items-center">
+@auth
+    <span class="text-xs font-bold uppercase">Welcome, {{ auth()->user()->name }}!</span>
+
+    <form method="POST" action="/logout" class="text-xs font-semibold text-blue-500 ml-6">
+    @csrf
+
+        <button type="submit">Log Out</button>
+                    </form>
+@else
+    <a href="/register" class="text-xs font-bold uppercase">Register</a>
+    <a href="/login" class="ml-6 text-xs font-bold uppercase">Log In</a>
+@endauth
+```
+
+Ahora agregaremos el login en la función store() en `RegisterController`, de esta forma, una vez se registra exictosamente un usuario ya estaria logueado.
+
+```php
+$user = User::create($attributes);
+auth()->login($user);
+```
+
+y modificaremos la variable `public const HOME` que se encuentra en `/app/Providers/RouteServiceProvider.php` para que nos redigirija a nuestro index, `public const HOME = '/';`
+
+Ahora crearemos un controlador para nuestras sesiones usando `php artisan make:controller SessionsController` y agregaremos la función que usaremos para hacer logout
+
+```php
+public function destroy()
+{
+    auth()->logout();
+    return redirect('/')->with('success', 'Goodbye!');
+}
+```
+
+Para terminar, agregamos el logout a nuestras rutas y modificamos las rutas de registro para que utilicen el middleware 'guest', de esta forma si el usuario se encuentra logueado, no podra acceder a ellas.
+
+```php
+Route::get('register', [RegisterController::class, 'create'])->middleware('guest');
+Route::post('register', [RegisterController::class, 'store'])->middleware('guest');
+Route::post('logout', [SessionsController::class, 'destroy'])->middleware('auth');
+```
