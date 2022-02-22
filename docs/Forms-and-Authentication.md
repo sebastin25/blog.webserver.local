@@ -286,3 +286,9 @@ y para terminar, creamos `/resources/views/sessions/create.blade.php` la cual se
     </section>
 </x-layout>
 ```
+
+## Laravel Breeze Quick Peek
+
+Podemos encontrar la documentación oficial sobre Laravel Breeze [aqui](https://laravel.com/docs/8.x/starter-kits)
+
+Hay que tener en cuenta que Laravel Breeze se debe usar al inicio del proyecto, configurar la DB y hacer las migraciones. Ademas, requiere nodejs y npm para funcionar.
