@@ -244,3 +244,36 @@ Luego modificaremos `show.blade.php` para agregar la url de nuestro action en el
     </p>
 @endauth
 ```
+
+## Some Light Chapter Clean Up
+
+Crearemos una nueva vista parcial `/resources/views/posts/_add-comment-form.blade.php` la cual tendrá nuestro form para comentarios, por lo cual pondremos dentro el código que corresponde al form y en `show.blade.php` agregaremos el @include para esa vista parcial, quedando de la siguiente forma.
+
+```php
+<section class="col-span-8 col-start-5 mt-10 space-y-6">
+
+    @include ('posts._add-comment-form')
+
+    @foreach ($post->comments as $comment)
+        <x-post-comment :comment="$comment" />
+    @endforeach
+
+</section>
+```
+
+Ya que posiblemente repitamos el uso de un botón para submit que usara las mismas clases, crearemos un componente `submit-button.blade.php`
+
+```php
+<button type="submit"
+    class="bg-blue-500 text-white uppercase font-semibold text-xs py-2 px-10 rounded-2xl hover:bg-blue-600">
+    {{ $slot }}
+</button>
+```
+
+y modificaremos `_add-comment-form.blade.php` para que utilice este componente nuevo.
+
+```php
+<div class="flex justify-end mt-6 pt-6 border-t border-gray-200">
+    <x-submit-button>Post</x-submit-button>
+</div>
+```
