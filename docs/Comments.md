@@ -4,7 +4,7 @@
 
 ## Write the Markup for a Post Comment
 
-Ahora agregaremos la sección de Comentarios, para lo cual crearemos un componete `post-comment.blade.php`.
+Ahora agregaremos la sección de comentarios, para lo cual crearemos un componete `post-comment.blade.php`.
 
 ```php
 <article class="flex bg-gray-100 border border-gray-200 p-6 rounded-xl space-x-4">
@@ -42,3 +42,24 @@ Luego agregaremos la referencia a la vista `/posts/post-comment.blade.php`, lueg
     <x-post-comment />
 </section>
 ```
+
+## Table Consistency and Foreign Key Constraints
+
+Crearemos una tabla para comentarios, su modelo, migración, controlador y factory usando el comando `php artisan make:model Comment -mfc`
+
+Modificamos el archivo de migración con las columnas que necesitaremos.
+
+```php
+public function up()
+{
+    Schema::create('comments', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('post_id')->constrained()->cascadeOnDelete();
+        $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+        $table->text('body');
+        $table->timestamps();
+    });
+}
+```
+
+En este caso agregamos `constrained()->cascadeOnDelete()` para que nuestro foreign_key referencia el id de la tabla que queremos y cascadeOnDelete para que al eliminarse el post o usuario al que pertenece el comentario, se elimina también. De paso modificamos la migración de posts para agregarle `constrained()->cascadeOnDelete()` en user_id.
