@@ -152,7 +152,7 @@ Modificaremos `post-comment.blade.php` para que ahora utilice nuestro nuevo comp
 ```php
 <x-panel class="bg-gray-50">
     <article class="flex space-x-4">
-        ...
+        // code
     </article>
 </x-panel>
 ```
@@ -180,4 +180,67 @@ Luego modificaremos nuestra vista `show.blade.php` para agregar el form encargad
         <x-post-comment :comment="$comment" />
     @endforeach
 </section>
+```
+
+## Activate the Comment Form
+
+Creamos el controlador `PostCommentsController` usando `php artisan make:controller PostCommentsController`
+
+```php
+    public function store(Post $post)
+    {
+        request()->validate([
+            'body' => 'required'
+        ]);
+
+        $post->comments()->create([
+            'user_id' => request()->user()->id,
+            'body' => request('body')
+
+        ]);
+
+        return back();
+    }
+```
+
+Agregamos nuestra ruta nueva
+
+```php
+Route::post('/posts/{post:slug}/comments' PostCommentsController::class, 'store']);
+```
+
+Para que no sea necesario agregar la variable `protected $guarded = [];` en nuestros modelos, modificaremos `/app/Providers/AppServiceProvider.php` y luego removeremos la variable de nuestros modelos.
+
+```php
+public function boot()
+{
+    Model::unguard();
+}
+```
+
+En nuestro componente `post-comment.blade.php` le daremos formato a la hora y corregiremos el url de la imagen para que muestre una imagen única por usuario.
+
+```php
+
+<img src="https://i.pravatar.cc/60?u={{ $comment->user_id }}" alt="" width="60" height="60" class="rounded-xl">
+
+<p class="text-xs">
+    Posted <time>{{ $comment->created_at->format('F j, Y, g:i a') }}</time>
+</p>
+```
+
+Luego modificaremos `show.blade.php` para agregar la url de nuestro action en el form, asegurarnos que no se muestre cuando el usuario no esta autentificado y de no estarlo, que se muestre un mensaje al respecto.
+
+```php
+@auth
+    <x-panel>
+        <form action="/posts/{{ $post->slug }}/comments" method="post">
+            // code
+        </form>
+    </x-panel>
+@else
+    <p class="font-semibold">
+        <a href="/register" class="hover:underline">Reg</a> or <a href="/login" class="hover:underline">Log in</a> to leave a comment.
+    </p>
+@endauth
 ```
