@@ -1,12 +1,3 @@
-[<Go Back](/README.md)
-
-# Comments
-
-## Write the Markup for a Post Comment
-
-Ahora agregaremos la sección de Comentarios, para lo cual crearemos un componete `post-comment.blade.php`.
-
-```php
 <article class="flex bg-gray-100 border border-gray-200 p-6 rounded-xl space-x-4">
     <div class="flex-shrink-0">
         <img src="https://i.pravatar.cc/60" alt="" width="60" height="60" class="rounded-xl">
@@ -30,15 +21,3 @@ Ahora agregaremos la sección de Comentarios, para lo cual crearemos un componet
         </p>
     </div>
 </article>
-```
-
-Luego agregaremos la referencia a la vista `/posts/post-comment.blade.php`, luego del body
-
-```php
-<section class="col-span-8 col-start-5 mt-10 space-y-6">
-    <x-post-comment />
-    <x-post-comment />
-    <x-post-comment />
-    <x-post-comment />
-</section>
-```
