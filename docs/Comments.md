@@ -136,3 +136,48 @@ Luego modificamos `post-comment.blade.php` para que utilice los datos en nuestra
     </div>
 </article>
 ```
+
+## Design the Comment Form
+
+Ya que hemos utilizado repetidamente las clases `border border-gray-200 p-6 rounded-xl` a la hora de crear cajas, crearemos un componente `panel.blade.php`para ellas.
+
+```php
+<div {{ $attributes(['class' => 'border border-gray-200 p-6 rounded-xl']) }}>
+    {{ $slot }}
+</div>
+```
+
+Modificaremos `post-comment.blade.php` para que ahora utilice nuestro nuevo componente y removemos las clases de los componentes que las tengan.
+
+```php
+<x-panel class="bg-gray-50">
+    <article class="flex space-x-4">
+        ...
+    </article>
+</x-panel>
+```
+
+Luego modificaremos nuestra vista `show.blade.php` para agregar el form encargado de agregar nuevos comentarios.
+
+```php
+<section class="col-span-8 col-start-5 mt-10 space-y-6">
+    <x-panel>
+        <form action="" method="post">
+            @CSRF
+            <header class="flex items-center">
+                <img src="https://i.pravatar.cc/40?u={{ auth()->id() }}" width="40" height="40" class="rounded-full">
+                <h2 class="ml-4">Want to participate?</h2>
+            </header>
+            <div class="mt-6">
+                <textarea name="body" class="w-full text-sm focus:outline-none focus:ring" rows="5" placeholder="Quick, think of something to say!"></textarea>
+            </div>
+            <div class="flex justify-end mt-6 pt-6 border-t border-gray-200">
+                <button type="submit" class="bg-blue-500 text-white uppercase font-semibold text-xs py-2 px-10 round-2xl hover:bg-blue-600">Post</button>
+            </div>
+        </form>
+    </x-panel>
+    @foreach ($post->comments as $comment)
+        <x-post-comment :comment="$comment" />
+    @endforeach
+</section>
+```
