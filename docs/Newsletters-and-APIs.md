@@ -141,3 +141,73 @@ Lo siguiente sera modificar `layout.blade.php` para agregarle @csrf al form, un 
     </button>
 </form>
 ```
+
+## Extract a Newsletter Service
+
+Modificamos `/config/services.php` y agregamos `MAILCHIMP_LIST_SUBSCRIBERS` a nuestro archivo .env
+
+```php
+'mailchimp' => [
+        'key' => env('MAILCHIMP_KEY'),
+        'lists' => [
+            'subscribers' => env('MAILCHIMP_LIST_SUBSCRIBERS')
+        ]
+    ]
+```
+
+Luego crearemos `/app/Services/Newsletter.php`
+
+```php
+<?php
+
+namespace App\Services;
+
+use MailchimpMarketing\ApiClient;
+
+class Newsletter
+{
+    public function subscribe(string $email, string $list = null)
+    {
+        $list ??= config('services.mailchimp.lists.subscribers');
+
+        return $this->client()->lists->addListMember($list, [
+            'email_address' => $email,
+            'status' => 'subscribed'
+        ]);
+    }
+
+    protected function client()
+    {
+        return (new ApiClient())->setConfig([
+            'apiKey' => config('services.mailchimp.key'),
+            'server' => 'us6'
+        ]);
+    }
+}
+```
+
+Creamos un controlador `NewsletterController`
+
+```php
+public function __invoke(Newsletter $newsletter)
+    {
+        request()->validate(['email' => 'required|email']);
+
+        try {
+            $newsletter->subscribe(request('email'));
+        } catch (Exception $e) {
+            throw ValidationException::withMessages([
+                'email' => 'This email could not be added to our newsletter list.'
+            ]);
+        }
+
+        return redirect('/')
+            ->with('success', 'You are now signed up for our newsletter!');
+    }
+```
+
+Modificamos la ruta
+
+```php
+Route::post('newsletter', NewsletterController::class);
+```
