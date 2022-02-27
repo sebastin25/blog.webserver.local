@@ -211,3 +211,63 @@ Modificamos la ruta
 ```php
 Route::post('newsletter', NewsletterController::class);
 ```
+
+## Toy Chests and Contracts
+
+Creamos un nuevo servicio `/app/Services/MailchimpNewsletter.php` el cual tendrá la lógica necesaria para realizar la suscripción en Mailchimp
+
+```php
+<?php
+
+namespace App\Services;
+
+use MailchimpMarketing\ApiClient;
+
+class MailchimpNewsletter implements Newsletter
+{
+    public function __construct(ApiClient $client)
+    {
+        $this->client = $client;
+    }
+
+    public function subscribe(string $email, string $list = null)
+    {
+        $list ??= config('services.mailchimp.lists.subscribers');
+
+        return $this->client->lists->addListMember($list, [
+            'email_address' => $email,
+            'status' => 'subscribed'
+        ]);
+    }
+}
+```
+
+Luego modificamos nuestro servicio `/app/Services/Newsletter.php` para que actué como interfaz para newsletter, el cual servirá sin importar cuantos servicios tengamos para suscribirnos al newsletter
+
+```php
+<?php
+
+namespace App\Services;
+
+interface Newsletter
+{
+    public function subscribe(string $email, string $list = null);
+}
+
+```
+
+Luego modificamos `/app/Providers/AppServiceProvider.php`
+
+```php
+    public function register()
+    {
+        app()->bind(Newsletter::class, function () {
+            $client = (new ApiClient)->setConfig([
+                'apiKey' => config('services.mailchimp.key'),
+                'server' => 'us14'
+            ]);
+
+            return new MailchimpNewsletter($client);
+        });
+    }
+```
