@@ -172,3 +172,102 @@ public function store()
     return redirect('/');
 }
 ```
+
+## Validate and Store Post Thumbnails
+
+modificamos `/database/migrations/2022_02_14_202409_create_posts_table.php` para agregar la columna thumbnail
+
+```php
+public function up()
+    {
+        Schema::create('posts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('category_id');
+            $table->string('slug')->unique();
+            $table->string('title');
+            $table->string('thumbnail')->nullable();
+            $table->text('excerpt');
+            $table->text('body');
+            $table->timestamps();
+            $table->timestamp('published_at')->nullable();
+        });
+    }
+```
+
+Agregamos una función store en `PostController` para guardar los post en la DB
+
+```php
+public function store()
+    {
+
+        $attributes = request()->validate([
+            'title' => 'required',
+            'thumbnail' => 'required|image',
+            'slug' => ['required', Rule::unique('posts', 'slug')],
+            'excerpt' => 'required',
+            'body' => 'required',
+            'category_id' => ['required', Rule::exists('categories', 'id')]
+        ]);
+
+        $attributes['user_id'] = auth()->id();
+        $attributes['thumbnail'] = request()->file('thumbnail')->store('thumbnails');
+
+        Post::create($attributes);
+
+        return redirect('/');
+    }
+```
+
+Modificamos `/config/filesystems.php` para que utilice `'default' => env('FILESYSTEM_DRIVER', 'public')`
+
+Creamos el link entre `/storage/app/public/` y `/public/storage/` creando un symlink con el comando `php artisan storage:link`. Al estar usando vagrant, se debe correr la terminal como administrador antes de conectarse por ssh o usar el comando desde la maquina host.
+
+Luego corremos para que creen nuevamente las tablas de la db `php artisan migrate:fresh --seed`
+
+Modificamos `/resources/views/posts/create.blade.php` con un titulo y file select que ocupamos para el thumbnail
+
+```php
+<x-layout>
+    <section class="py-8 max-w-md mx-auto">
+        <h1 class="text-lg font-bold mb-4">
+            Publish New Post
+        </h1>
+
+        <x-panel>
+            <form method="POST" action="/admin/posts" enctype="multipart/form-data">
+
+                // Code...
+
+                <div class="mb-6">
+                    <label class="block mb-2 uppercase font-bold text-xs text-gray-700" for="thumbnail">
+                        Thumbnail
+                    </label>
+
+                    <input class="border border-gray-400 p-2 w-full" type="file" name="thumbnail" id="thumbnail"
+                        required>
+
+                    @error('thumbnail')
+                        <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                // Code...
+
+            </form>
+        </x-panel>
+    </section>
+</x-layout>
+```
+
+Seguidamente modificamos la vista `/resources/views/posts/show.blade.php` para que use la imagen que le agregamos al post
+
+```php
+<img src="{{ asset('storage/' . $post->thumbnail) }}" alt="" class="rounded-xl">
+```
+
+y los componentes `/resources/views/post-featured.blade.php` y `/resources/views/post-card.blade.php`
+
+```php
+<img src="{{ asset('storage/' . $post->thumbnail) }}" alt="Blog Post illustration" class="rounded-xl">
+```
