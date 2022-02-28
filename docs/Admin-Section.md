@@ -792,3 +792,55 @@ Modificamos la vista `/sessions/create.blade.php` para que sus input sean requir
 <x-form.input name="email" type="email" autocomplete="username" required />
 <x-form.input name="password" type="password" autocomplete="current-password" required />
 ```
+
+## Group and Store Validation Logic
+
+Creamos una nueva función en `AdminPostController` la cual se encargara de hacer las validaciones de $post
+
+```php
+protected function validatePost(?Post $post = null): array
+    {
+        $post ??= new Post();
+
+        return request()->validate([
+            'title' => 'required',
+            'thumbnail' => $post->exists ? ['image'] : ['required', 'image'],
+            'slug' => ['required', Rule::unique('posts', 'slug')->ignore($post)],
+            'excerpt' => 'required',
+            'body' => 'required',
+            'category_id' => ['required', Rule::exists('categories', 'id')],
+            'published_at' => 'required'
+        ]);
+    }
+```
+
+Modificamos update() para que utilice la función de validación
+
+```
+public function update(Post $post)
+    {
+        $attributes = $this->validatePost($post);
+
+        if ($attributes['thumbnail'] ?? false) {
+            $attributes['thumbnail'] = request()->file('thumbnail')->store('thumbnails');
+        }
+
+        $post->update($attributes);
+
+        return back()->with('success', 'Post Updated!');
+    }
+```
+
+Y store()
+
+```php
+public function store()
+    {
+        Post::create(array_merge($this->validatePost(), [
+            'user_id' => request()->user()->id,
+            'thumbnail' => request()->file('thumbnail')->store('thumbnails')
+        ]));
+
+        return redirect('/');
+    }
+```
