@@ -19,4 +19,4 @@
 -   [x] [Módulo 10. Comentarios (Comments)](./docs/Comments.md)
 -   [x] [Módulo 11. Boletines y APIs (Newsletters and APIs)](./docs/Newsletters-and-APIs.md)
 -   [x] [Módulo 12. Sección de administración (Admin Section)](./docs/Admin-Section.md)
--   [ ] [Módulo 13. Conclusión (Conclusion)](./docs/Conclusion.md)
+-   [x] [Módulo 13. Conclusión (Conclusion)](./docs/Conclusion.md)
