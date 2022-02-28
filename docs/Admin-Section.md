@@ -844,3 +844,50 @@ public function store()
         return redirect('/');
     }
 ```
+
+## All About Authorization
+
+Modificamos `/app/Providers/AppServiceProvider.php`
+
+```php
+use App\Models\User;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Gate;
+
+//Code..
+public function boot()
+{
+    Model::unguard();
+
+    //Básicamente lo mismo que crear un middleware para validar admin
+    Gate::define('admin', function (User $user) {
+         return $user->username === 'sebastin25';
+    });
+
+
+    //Permite utilizar @admin @endadmin en las vistas .blade.php y realiza la validación sobre si es admin
+    Blade::if('admin', function () {
+         return optional(request()->user())->can('admin');
+    });
+}
+```
+
+Modificamos `layout.blade.php` para que los enlaces a dashboard y new post solo lo muestre si se es admin
+
+```php
+@admin
+    <x-dropdown-item href="/admin/posts" :active="request()->is('admin/posts')">Dashboard</x-dropdown-item>
+    <x-dropdown-item href="/admin/posts/create" :active="request()->is('admin/posts/create')">New Post</x-dropdown-item>
+@endadmin
+```
+
+Eliminamos `/app/Http/Middleware/MustBeAdministrator.php` y su referencia en `/app/Http/Kernel.php`
+
+Reemplazamos la rutas de admin por la siguiente, donde definimos un grupo al cual se le aplica el mismo middleware. luego creamos un Route::resource que nos creara todas las rutas excepto show que no la estamos usando.
+
+```php
+// Admin Section
+Route::middleware('can:admin')->group(function () {
+    Route::resource('admin/posts', AdminPostController::class)->except('show');
+});
+```

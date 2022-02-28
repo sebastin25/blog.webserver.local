@@ -4,7 +4,7 @@
 <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.gstatic.com">
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
 
 <style>
     html {
@@ -30,10 +30,13 @@
                             <button class="text-xs font-bold uppercase">Welcome, {{ auth()->user()->name }}!</button>
                         </x-slot>
 
+                        @admin
                         <x-dropdown-item href="/admin/posts" :active="request()->is('admin/posts')">Dashboard
                         </x-dropdown-item>
                         <x-dropdown-item href="/admin/posts/create" :active="request()->is('admin/posts/create')">New Post
                         </x-dropdown-item>
+                        @endadmin
+
                         <x-dropdown-item href="#" x-data="{}"
                             @click.prevent="document.querySelector('#logout-form').submit()">Log Out</x-dropdown-item>
 
