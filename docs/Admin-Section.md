@@ -271,3 +271,119 @@ y los componentes `/resources/views/post-featured.blade.php` y `/resources/views
 ```php
 <img src="{{ asset('storage/' . $post->thumbnail) }}" alt="Blog Post illustration" class="rounded-xl">
 ```
+
+## Extract Form-Specific Blade Components
+
+Creamos los siguientes componentes
+
+`/resources/views/components/form/button.blade.php`
+
+```php
+<x-form.field>
+    <button type="submit"
+        class="bg-blue-500 text-white uppercase font-semibold text-xs py-2 px-10 rounded-2xl hover:bg-blue-600">
+        {{ $slot }}
+    </button>
+</x-form.field>
+```
+
+`/resources/views/components/form/error.blade.php`
+
+```php
+@props(['name'])
+
+@error($name)
+    <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
+@enderror
+```
+
+`/resources/views/components/form/field.blade.php`
+
+```php
+<div class="mt-6">
+    {{ $slot }}
+</div>
+```
+
+`/resources/views/components/form/input.blade.php`
+
+```php
+@props(['name', 'type' => 'text'])
+
+<x-form.field>
+    <x-form.label name="{{ $name }}" />
+
+    <input class="border border-gray-400 p-2 w-full" type="{{ $type }}" name="{{ $name }}"
+        id="{{ $name }}" value="{{ old($name) }}" required>
+
+    <x-form.error name="{{ $name }}" />
+</x-form.field>
+```
+
+`/resources/views/components/form/label.blade.php`
+
+```php
+@props(['name'])
+
+<label class="block mb-2 uppercase font-bold text-xs text-gray-700" for="{{ $name }}">
+    {{ ucwords($name) }}
+</label>
+```
+
+`/resources/views/components/form/textarea.blade.php`
+
+```php
+@props(['name'])
+<x-form.field>
+    <x-form.label name="{{ $name }}" />
+
+    <textarea class="border border-gray-400 p-2 w-full" name="{{ $name }}" id="{{ $name }}"
+        required>{{ old($name) }}</textarea>
+
+    <x-form.error name="{{ $name }}" />
+</x-form.field>
+```
+
+Modificamos las siguientes vistas para que usen los nuevos componentes
+
+`/resources/views/posts/_add-comment-form.blade.php`
+
+```php
+<x-form.button>Submit</x-form.button>
+```
+
+`/resources/views/posts/create.blade.php`
+
+```php
+<x-layout>
+    <section class="py-8 max-w-md mx-auto">
+        <h1 class="text-lg font-bold mb-4">
+            Publish New Post
+        </h1>
+
+        <x-panel>
+            <form method="POST" action="/admin/posts" enctype="multipart/form-data">
+                @csrf
+
+                <x-form.input name="title" />
+                <x-form.input name="slug" />
+                <x-form.input name="thumbnail" type="file" />
+                <x-form.textarea name="excerpt" />
+                <x-form.textarea name="body" />
+                <x-form.field>
+                    <x-form.label name="category" />
+                    <select name="category_id" id="category_id">
+                        @foreach (\App\Models\Category::all() as $category)
+                            <option value="{{ $category->id }}"
+                                {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                {{ ucwords($category->name) }}</option>
+                        @endforeach
+                    </select>
+                    <x-form.error name="category" />
+                </x-form.field>
+                <x-form.button>Publish</x-form.button>
+            </form>
+        </x-panel>
+    </section>
+</x-layout>
+```
